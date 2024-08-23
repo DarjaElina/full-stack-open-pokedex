@@ -1,5 +1,8 @@
 name: Deployment pipeline
 
+env:
+  SKIP_COMMIT: ${{ contains(join(github.event.commits.*.message), '#skip') }}
+
 on:
   push:
     branches:
@@ -40,7 +43,7 @@ jobs:
       - name: Set up Flyctl
         uses: superfly/flyctl-actions/setup-flyctl@master
       - name: Deploy app
-        if: ${{ github.event_name == 'push' }}
+        if: ${{ github.event_name == 'push' && env.SKIP_COMMIT == 'false'}}
         run: flyctl deploy --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
@@ -50,8 +53,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Bump version and push tag
+        if: ${{ env.SKIP_COMMIT == 'false' }}
         uses: anothrNick/github-tag-action@1.64.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BUMP: patch
-
