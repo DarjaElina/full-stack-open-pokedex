@@ -1,9 +1,6 @@
 name: Healthcheck
 
 on:
-  push:
-    branches:
-      - main
   schedule:
     - cron: "0 17 * * *"
 
@@ -23,7 +20,7 @@ jobs:
         run: |
           curl -H "Content-Type: application/json" \
                 -X POST \
-                -d '{"content": "Periodic health check passes"}' \
+                -d '{"content": "Periodic health check for pokedex app passed successfully."}' \
                 ${{ secrets.DISCORD_WEBHOOK }}
     
       - name: Healthcheck fail
@@ -31,5 +28,5 @@ jobs:
         run: |
           curl -H "Content-Type: application/json" \
                 -X POST \
-                -d '{"content": "Health check failed"}' \
+                -d '{"content": "Health check for pokedex app failed!"}' \
                 ${{ secrets.DISCORD_WEBHOOK }}
