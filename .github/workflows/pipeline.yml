@@ -1,7 +1,7 @@
 name: Deployment pipeline
 
 env:
-  SKIP_COMMIT: ${{ contains(join(github.event.commits.*.message), '#skip') }}
+  DEPLOY: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message), '#skip') }}
 
 on:
   push:
@@ -51,13 +51,13 @@ jobs:
         uses: superfly/flyctl-actions/setup-flyctl@master
 
       - name: Deploy app
-        if: ${{ github.event_name == 'push' && env.SKIP_COMMIT == 'false'}}
+        if: ${{ env.DEPLOY == 'true' }}
         run: flyctl deploy --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
       - name: Build Success
-        if: success()
+        if: ${{ success() && env.DEPLOY == 'true' }}
         run: |
           curl -H "Content-Type: application/json" \
                -X POST \
@@ -78,7 +78,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Bump version and push tag
-        if: ${{ env.SKIP_COMMIT == 'false' }}
+        if: ${{ env.DEPLOY == 'true' }}
         uses: anothrNick/github-tag-action@777684df761b882a3f4f70db16ac70d8cc78d0ea
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
